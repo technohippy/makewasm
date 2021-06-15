@@ -1,0 +1,310 @@
+module
+  = _ "(" _ "module" _ id:id? _ fields:modulefield* _ ")" _ {
+    return {
+      node:"module",
+      id:id,
+      fields:fields
+    }
+  }
+
+modulefield
+  = func
+  / export
+
+func
+  = _ "(" _ "func" _ id:id? _ type:typeuse _ locals:local* _ instrs:instr* _ ")" {
+    return {
+      node:"funcsec",
+      id:id,
+      type:type,
+      locals:locals,
+      instrs:instrs
+    }
+  }
+  / _ "(" _ "func" _ id:id? _ "(" _ "export" _ name:name _ ")" _ type:typeuse _ locals:local* _ instrs:instr* _ ")" {
+    return {
+      node:"funcsec",
+      export:name,
+      id:id,
+      type:type,
+      locals:locals,
+      instrs:instrs
+    }
+  }
+
+typeuse
+  = _ "(" _ "type" _ idx:idx _ ")" _ params:param* _ result:result* {
+    return {
+      node:"functype",
+      index:idx,
+      params:params,
+      result:result
+    }
+  }
+  / _ params:param* _ result:result* {
+    return {
+      node:"functype",
+      params:params,
+      result:result
+    }
+  }
+
+param
+  = _ "(" _ "param" _ id:id _ type:valtype _ ")" {
+    return {
+      id:id,
+      type:type
+    }
+  }
+
+result
+  = _ "(" _ "result" _ type:valtype _ ")" {
+    return {
+      type:type
+    }
+  }
+
+valtype
+  = numtype
+  / reftype
+
+numtype
+  = "i32"
+  / "i64"
+  / "f32"
+  / "f64"
+
+reftype
+  = "funcref"
+  / "externref"
+
+local
+  = _ "(" _ "local" _ id:id? _ type:valtype _ ")" {
+    return {
+      node:"local",
+      id:id,
+      type:type
+    }
+  }
+
+instr
+  = _ instr:plaininstr {
+    return instr
+  }
+  / _ instr:blockinstr {
+    return instr
+  }
+  / _ "(" _ instr:instr _ ")" {
+    return instr
+  }
+
+plaininstr
+  = "br" _ idx:idx {
+    return {
+      node:"instruction",
+      kind:"br",
+      index:idx
+    }
+  }
+  / "br_if" _ idx:idx _ instr:instr? {
+    return {
+      node:"instruction",
+      kind:"br_if",
+      index:idx,
+      instr:instr
+    }
+  }
+  / "call" _ idx:idx _ instrs:instr* {
+    return {
+      node:"instruction",
+      kind:"call",
+      index:idx,
+      instrs:instrs
+    }
+  }
+  / "local.get" _ idx:idx _ instr:instr? {
+    return {
+      node:"instruction",
+      kind:"local.get",
+      index:idx,
+      instr:instr
+
+    }
+  }
+  / "local.set" _ idx:idx _ instr:instr? {
+    return {
+      node:"instruction",
+      kind:"local.set",
+      index:idx,
+      instr:instr
+
+    }
+  }
+  / "i32.const" _ num:i32 {
+    return {
+      node:"instruction",
+      kind:"i32.const",
+      value:num
+    }
+  }
+  / "i32.add" _ instrs:instr* {
+    return {
+      node:"instruction",
+      kind:"i32.add",
+      instrs:instrs
+    }
+  }
+  / "i32.rem_s" _ instrs:instr* {
+    return {
+      node:"instruction",
+      kind:"i32.rem_s",
+      instrs:instrs
+    }
+  }
+  / "i32.eqz" _ instrs:instr* {
+    return {
+      node:"instruction",
+      kind:"i32.eqz",
+      instrs:instrs
+    }
+  }
+  / "i32.lt_s" _ instrs:instr* {
+    return {
+      node:"instruction",
+      kind:"i32.lt_s",
+      instrs:instrs
+    }
+  }
+  / "i32.ge_s" _ instrs:instr* {
+    return {
+      node:"instruction",
+      kind:"i32.ge_s",
+      instrs:instrs
+    }
+  }
+
+blockinstr
+  = "block" _ label:label _ type:blocktype _ instrs:instr* _ "end" _ id:id? {
+    return {
+      node:"instruction",
+      kind:"block",
+      label:label,
+      type:type,
+      instrs:instrs,
+      id:id
+    }
+  }
+  / "loop" _ label:label _ type:blocktype _ instrs:instr* _ "end" _ id:id? {
+    return {
+      node:"instruction",
+      kind:"loop",
+      label:label,
+      type:type,
+      instrs:instrs,
+      id:id
+    }
+  }
+  / "if" _ label:label _ type:blocktype _ then_instrs:instr* _ "else" _ then_id:id? _ else_instrs:instr* _ "end" _ else_id:id? {
+    return {
+      node:"instruction",
+      kind:"if",
+      label:label,
+      type:type,
+      then_instrs:then_instrs,
+      then_id:then_id,
+      else_instrs:else_instrs,
+      else_id:else_id
+    }
+  }
+  / "if" _ label:label _ type:blocktype _ then_instrs:instr* _ "end" _ then_id:id? {
+    return {
+      node:"instruction",
+      kind:"if",
+      label:label,
+      type:type,
+      then_instrs:then_instrs,
+      then_id:then_id
+    }
+  }
+  / "(" _ "block" _ label:label _ type:blocktype _ instrs:instr* _ ")" {
+    return {
+      node:"instruction",
+      kind:"block",
+      label:label,
+      type:type,
+      instrs:instrs
+    }
+  }
+  / "(" _ "loop" _ label:label _ type:blocktype _ instrs:instr* _ ")" {
+    return {
+      node:"instruction",
+      kind:"loop",
+      label:label,
+      type:type,
+      instrs:instrs
+    }
+
+  }
+  / "(" _ "if" _ label:label _ type:blocktype _ folded_instrs:instr* _ "(" _ "then" _ then_instrs:instr* _ ")" _ ("(" _ "else" _ else_instrs:instr* _ ")")? _ ")" {
+    return {
+      node:"instruction",
+      kind:"if",
+      label:label,
+      type:type,
+      folded_instrs:folded_instrs,
+      then_instrs:then_instrs,
+      else_instrs:else_instrs
+    }
+  }
+
+blocktype
+  = result
+  / typeuse
+
+label
+  = id?
+
+export
+  = "(" _ "export" _ name:name _ desc:exportdesc _ ")" {
+    return {
+      node:"exportsec",
+      name:name,
+      desc:desc
+    }
+  }
+
+exportdesc
+  = "(" _ "func" _ idx:idx _ ")" {
+    return {
+      node:"exportdesc",
+      type:"func",
+      index:idx
+    }
+  }
+
+idx
+  = u32
+  / id
+
+name
+  = "\"" name:[ 0-9a-zA-Z]+ "\"" {
+    return name.join("")
+  }
+
+i32
+  = sign:[+-]? num:[0-9]+ {
+    return parseInt(`${sign || ""}${num.join("")}`, 10)
+  }
+
+u32
+  = num:[0-9]+ {
+    return parseInt(num.join(""), 10)
+  }
+
+id
+  = "$" name:[0-9a-zA-Z]+ {
+    return `$${name.join("")}`
+  }
+
+_ "whitespace"
+  = [ \t\n\r]*
