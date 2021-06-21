@@ -8,11 +8,11 @@ https://techbookfest.org/product/5689941050785792
 
 https://github.com/technohippy/makewasm/tree/main/sample
 
+## 参考
+
+https://github.com/technohippy/wasmts
+
 ## 正誤表
 
 | ページ番号 | 誤 | 正 |
 | ---- | ---- | ---- |
-
-## 参考
-
-https://github.com/technohippy/wasmts
