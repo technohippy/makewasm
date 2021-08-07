@@ -14,5 +14,6 @@ https://github.com/technohippy/wasmts
 
 ## 正誤表
 
-| ページ番号 | 誤 | 正 |
-| ---- | ---- | ---- |
+| ページ番号 | 誤 | 正 | 説明 |
+| ---- | ---- | ---- | ---- |
+| -    | assertEquals(actual, expected) | assertEquals(actual, expected) | assertEqualsの引数が逆　|
