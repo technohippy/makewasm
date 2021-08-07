@@ -16,4 +16,4 @@ https://github.com/technohippy/wasmts
 
 | ページ番号 | 誤 | 正 | 説明 |
 | ---- | ---- | ---- | ---- |
-| -    | assertEquals(actual, expected) | assertEquals(actual, expected) | assertEqualsの引数が逆　|
+| -    | assertEquals(expected, actual) | assertEquals(actual, expected) | assertEqualsの引数が逆　|
